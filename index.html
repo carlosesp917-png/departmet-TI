@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico TI — Análisis de Madurez Tecnológica</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0D0F14;
+    --surface: #13161E;
+    --surface2: #1C2030;
+    --border: #252A38;
+    --danger: #E05252;
+    --danger-dim: #2A1A1A;
+    --warning: #E09A3A;
+    --warning-dim: #251E0F;
+    --ok: #3AAE7A;
+    --ok-dim: #0F2018;
+    --accent: #5B8EF0;
+    --accent-dim: #111827;
+    --text: #E8EAF0;
+    --muted: #7A8099;
+    --tag-bg: #1E2333;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 15px;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0D0F14 0%, #141829 60%, #0D1220 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 48px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(91,142,240,0.08) 0%, transparent 70%);
+  }
+
+  .eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .eyebrow::before {
+    content: '';
+    display: block;
+    width: 24px; height: 1px;
+    background: var(--accent);
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 4vw, 46px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-bottom: 16px;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .header-sub {
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 300;
+    max-width: 600px;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+  }
+
+  .badge {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+
+  .badge.red   { background: var(--danger-dim); border-color: var(--danger); color: var(--danger); }
+  .badge.amber { background: var(--warning-dim); border-color: var(--warning); color: var(--warning); }
+  .badge.blue  { background: var(--accent-dim);  border-color: var(--accent);  color: var(--accent); }
+
+  /* LAYOUT */
+  main { max-width: 1080px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  /* SECTION HEADER */
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(20px, 2.5vw, 28px);
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 28px;
+    line-height: 1.2;
+  }
+
+  section { margin-bottom: 64px; }
+
+  /* CONTEXT BAR */
+  .context-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 48px;
+  }
+
+  .ctx-item {
+    background: var(--surface);
+    padding: 20px 22px;
+  }
+
+  .ctx-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .ctx-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .ctx-val.red    { color: var(--danger); }
+  .ctx-val.amber  { color: var(--warning); }
+
+  /* RISK CARDS */
+  .risk-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  .risk-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+
+  .risk-card:hover { border-color: #3a4060; }
+
+  .risk-card .severity-bar {
+    position: absolute;
+    left: 0; top: 12px; bottom: 12px;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .risk-card.critical .severity-bar { background: var(--danger); }
+  .risk-card.high .severity-bar { background: var(--warning); }
+  .risk-card.medium .severity-bar { background: var(--accent); }
+
+  .risk-tag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    display: inline-block;
+  }
+
+  .risk-card.critical .risk-tag { background: var(--danger-dim); color: var(--danger); }
+  .risk-card.high .risk-tag     { background: var(--warning-dim); color: var(--warning); }
+  .risk-card.medium .risk-tag   { background: var(--accent-dim);  color: var(--accent); }
+
+  .risk-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #fff;
+  }
+
+  .risk-card p {
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* MIGRATION BLOCK */
+  .migration-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .migration-header {
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .version-chip {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 6px;
+  }
+
+  .version-chip.old { background: #2A1A1A; color: var(--danger); border: 1px solid #4A2020; }
+  .version-chip.new { background: #0F1C30; color: var(--accent); border: 1px solid #1E3A60; }
+
+  .arrow-mid {
+    color: var(--muted);
+    font-size: 18px;
+  }
+
+  .migration-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+
+  @media (max-width: 640px) {
+    .migration-body { grid-template-columns: 1fr; }
+  }
+
+  .mig-col {
+    padding: 24px 28px;
+  }
+
+  .mig-col:first-child { border-right: 1px solid var(--border); }
+
+  .mig-col h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .mig-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+
+  .mig-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .mig-list li .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+
+  .dot.red   { background: var(--danger); }
+  .dot.green { background: var(--ok); }
+
+  /* ROADMAP */
+  .roadmap { display: flex; flex-direction: column; gap: 0; }
+
+  .phase {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 0;
+  }
+
+  @media (max-width: 560px) {
+    .phase { grid-template-columns: 1fr; }
+    .phase-left { border-right: none !important; border-bottom: 1px solid var(--border); }
+  }
+
+  .phase-left {
+    border-right: 1px solid var(--border);
+    padding: 24px 24px 24px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  .phase:not(:last-child) .phase-left,
+  .phase:not(:last-child) .phase-right {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .phase-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--border);
+    line-height: 1;
+  }
+
+  .phase-time {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  .phase-right { padding: 24px 0 24px 28px; }
+
+  .phase-right h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+
+  .action-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+
+  .action-list li {
+    font-size: 13.5px;
+    color: var(--muted);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.5;
+  }
+
+  .action-list li::before {
+    content: '→';
+    color: var(--accent);
+    flex-shrink: 0;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  .phase-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+  }
+
+  .phase-tag.urgent  { background: var(--danger-dim); color: var(--danger); }
+  .phase-tag.medium  { background: var(--warning-dim); color: var(--warning); }
+  .phase-tag.long    { background: var(--ok-dim); color: var(--ok); }
+
+  /* HIGHLIGHT BOX */
+  .highlight-box {
+    background: linear-gradient(135deg, #111827 0%, #0F1C30 100%);
+    border: 1px solid #1E3A60;
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-top: 32px;
+  }
+
+  .highlight-box h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .highlight-box p {
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 32px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  /* DIVIDER */
+  hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    header { padding: 40px 24px 36px; }
+    .risk-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="eyebrow">Diagnóstico Tecnológico</div>
+  <h1>Madurez de <span>Infraestructura TI</span><br>sin Departamento Dedicado</h1>
+  <p class="header-sub">Análisis de riesgos, brechas operativas y hoja de ruta de modernización para empresa con 4 sucursales.</p>
+  <div class="badge-row">
+    <span class="badge red">Riesgo Crítico Operativo</span>
+    <span class="badge amber">Migración Pendiente WS2025</span>
+    <span class="badge blue">4 Bases de Datos Segregadas</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- CONTEXTO -->
+  <div class="context-grid">
+    <div class="ctx-item">
+      <div class="ctx-label">Sucursales</div>
+      <div class="ctx-val">4</div>
+    </div>
+    <div class="ctx-item">
+      <div class="ctx-label">Departamento TI</div>
+      <div class="ctx-val red">Inexistente</div>
+    </div>
+    <div class="ctx-item">
+      <div class="ctx-label">Infraestructura</div>
+      <div class="ctx-val amber">WS 2019 Local</div>
+    </div>
+    <div class="ctx-item">
+      <div class="ctx-label">Bases de datos</div>
+      <div class="ctx-val amber">4 (Separadas)</div>
+    </div>
+    <div class="ctx-item">
+      <div class="ctx-label">Conciliación</div>
+      <div class="ctx-val red">Manual / Diaria</div>
+    </div>
+    <div class="ctx-item">
+      <div class="ctx-label">Nivel de Riesgo</div>
+      <div class="ctx-val red">Alto</div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 1: SIN DEPARTAMENTO TI -->
+  <section>
+    <div class="section-label">Sección 01</div>
+    <div class="section-title">Desventajas de Operar sin un Departamento de TI</div>
+
+    <div class="risk-grid">
+
+      <div class="risk-card critical">
+        <div class="severity-bar"></div>
+        <span class="risk-tag">Crítico — Operativo</span>
+        <h3>Sin respuesta ante fallos críticos</h3>
+        <p>Una caída de servidor o base de datos puede paralizar operaciones durante horas o días. Sin personal técnico dedicado no existe un protocolo de respuesta, ni tiempos de recuperación definidos (RTO/RPO).</p>
+      </div>
+
+      <div class="risk-card critical">
+        <div class="severity-bar"></div>
+        <span class="risk-tag">Crítico — Seguridad</span>
+        <h3>Exposición permanente a ciberataques</h3>
+        <p>Sin gestión activa de parches, firewalls, antivirus y políticas de acceso, los servidores locales son vectores abiertos para ransomware, robo de datos y accesos no autorizados entre sucursales.</p>
+      </div>
+
+      <div class="risk-card critical">
+        <div class="severity-bar"></div>
+        <span class="risk-tag">Crítico — Datos</span>
+        <h3>Conciliación manual = error humano garantizado</h3>
+        <p>Consolidar 4 bases de datos a mano cada día genera inconsistencias de inventario, duplicidad de registros, discrepancias contables y pérdida de trazabilidad. Un solo error puede propagarse silenciosamente por semanas.</p>
+      </div>
+
+      <div class="risk-card high">
+        <div class="severity-bar"></div>
+        <span class="risk-tag">Alto — Financiero</span>
+        <h3>Costos ocultos de soporte reactivo</h3>
+        <p>Contratar proveedores externos por cada incidente es 3–5× más caro que tener personal interno. Además, los tiempos de atención son lentos, generando pérdidas por inactividad no cuantificadas.</p>
+      </div>
+
+      <div class="risk-card high">
+        <div class="severity-bar"></div>
+        <span class="risk-tag">Alto — Cumplimiento</span>
+        <h3>Sin respaldos estructurados ni políticas de retención</h3>
+        <p>Es probable que los backups sean inexistentes, incompletos o no verificados. En caso de fallo de hardware o ataque, la empresa puede perder años de información sin posibilidad de recuperación.</p>
+      </div>
+
+      <div class="risk-card high">
+        <div class="severity-bar"></div>
+        <span class="risk-tag">Alto — Crecimiento</span>
+        <h3>Imposibilidad de escalar</h3>
+        <p>Agregar una 5ta sucursal, integrar un ERP o conectar un e-commerce es prácticamente inviable sin infraestructura centralizada y personal que la gestione. La arquitectura actual es un techo de crecimiento.</p>
+      </div>
+
+      <div class="risk-card high">
+        <div class="severity-bar"></div>
+        <span class="risk-tag">Alto — Operativo</span>
+        <h3>Dependencia de usuarios clave</h3>
+        <p>Cuando alguien "que sabe de computadoras" en la empresa se va o falla, nadie más puede resolver problemas básicos. El conocimiento técnico está en personas, no en procesos documentados.</p>
+      </div>
+
+      <div class="risk-card medium">
+        <div class="severity-bar"></div>
+        <span class="risk-tag">Medio — Productividad</span>
+        <h3>Tiempo gerencial desperdiciado en TI</h3>
+        <p>Los directivos y administrativos invierten horas semanales resolviendo problemas tecnológicos que no son su responsabilidad: actualizaciones, impresoras, accesos, lentitud de sistemas, etc.</p>
+      </div>
+
+      <div class="risk-card medium">
+        <div class="severity-bar"></div>
+        <span class="risk-tag">Medio — Legal</span>
+        <h3>Riesgo de incumplimiento regulatorio</h3>
+        <p>Sin control de accesos, registros de auditoría ni políticas de privacidad de datos, la empresa puede incumplir la Ley Federal de Protección de Datos (LFPDPPP) y exponerse a sanciones del INAI.</p>
+      </div>
+
+      <div class="risk-card medium">
+        <div class="severity-bar"></div>
+        <span class="risk-tag">Medio — Continuidad</span>
+        <h3>Sin documentación ni inventario de activos</h3>
+        <p>No hay un registro actualizado de hardware, licencias, contraseñas o configuraciones. Ante una falla, nadie sabe qué tiene ni cómo estaba configurado, alargando exponencialmente cualquier recuperación.</p>
+      </div>
+
+      <div class="risk-card medium">
+        <div class="severity-bar"></div>
+        <span class="risk-tag">Medio — Estratégico</span>
+        <h3>Toma de decisiones a ciegas</h3>
+        <p>Al tener 4 bases de datos sin integrar, los reportes de ventas, inventario y finanzas no son en tiempo real ni confiables. La gerencia opera con información del día anterior o anterior a eso.</p>
+      </div>
+
+      <div class="risk-card medium">
+        <div class="severity-bar"></div>
+        <span class="risk-tag">Medio — Humano</span>
+        <h3>Carga operativa sobre personal no técnico</h3>
+        <p>Contadores, vendedores y administrativos realizan tareas técnicas (exportar archivos, hacer respaldos manuales, mover datos) que no les corresponden y para las que no están capacitados.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- SECCIÓN 2: MIGRACIÓN -->
+  <section>
+    <div class="section-label">Sección 02</div>
+    <div class="section-title">Windows Server 2019 → 2025: ¿Qué tan urgente es migrar?</div>
+
+    <div class="migration-wrap">
+      <div class="migration-header">
+        <span class="version-chip old">WS 2019</span>
+        <span class="arrow-mid">→</span>
+        <span class="version-chip new">WS 2025</span>
+        <div style="margin-left: auto; font-size: 12px; color: var(--muted);">Soporte mainstream hasta <strong style="color:var(--warning)">Oct 2024</strong> · EOL: Oct 2029</div>
+      </div>
+      <div class="migration-body">
+        <div class="mig-col">
+          <h4>Por qué quedarse en 2019 es riesgoso</h4>
+          <ul class="mig-list">
+            <li><span class="dot red"></span>El soporte mainstream de WS2019 ya terminó en octubre 2024 — solo recibe parches de seguridad hasta 2029, sin nuevas funcionalidades.</li>
+            <li><span class="dot red"></span>Vulnerabilidades descubiertas ya no reciben correcciones proactivas; solo parches críticos, lo que amplía la ventana de exposición.</li>
+            <li><span class="dot red"></span>Las aplicaciones modernas (ERP, integraciones cloud, contenedores) están optimizadas para WS2025 y pueden presentar incompatibilidades.</li>
+            <li><span class="dot red"></span>Planear la migración tardíamente aumenta el costo: con urgencia se pierde tiempo de análisis, documentación y pruebas.</li>
+            <li><span class="dot red"></span>Si además el hardware es antiguo, WS2019 puede estar corriendo sobre equipos sin soporte del fabricante, multiplicando el riesgo.</li>
+          </ul>
+        </div>
+        <div class="mig-col">
+          <h4>Beneficios de Windows Server 2025</h4>
+          <ul class="mig-list">
+            <li><span class="dot green"></span>Soporte mainstream garantizado hasta 2034, con actualizaciones de seguridad activas y nuevas funcionalidades.</li>
+            <li><span class="dot green"></span>Arquitectura de seguridad Zero Trust integrada: mejor protección contra movimiento lateral entre servidores de sucursales.</li>
+            <li><span class="dot green"></span>Integración nativa con Azure Arc y servicios híbridos — ideal para preparar una futura migración parcial o total a nube.</li>
+            <li><span class="dot green"></span>Mejoras en Hyper-V, Storage Spaces Direct y File Services que permiten consolidar los servidores de las 4 sucursales más eficientemente.</li>
+            <li><span class="dot green"></span>Nuevo kernel con soporte mejorado para contenedores, que facilita modernizar aplicaciones por etapas sin reescribir todo.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <h4>📌 Recomendación de timing</h4>
+      <p>La migración no es urgente en el sentido de "mañana o el desastre", pero sí es <strong>estratégicamente prioritaria en los próximos 6–12 meses</strong>. Hacerla como parte de un proyecto integral de madurez TI — junto con la centralización de bases de datos y la contratación de un responsable técnico — maximiza el retorno de inversión y minimiza las interrupciones operativas. Migrar bajo presión o en aislamiento es el escenario más costoso y riesgoso.</p>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- SECCIÓN 3: HOJA DE RUTA -->
+  <section>
+    <div class="section-label">Sección 03</div>
+    <div class="section-title">Hoja de Ruta de Mejoras — Por Fases</div>
+
+    <div class="roadmap">
+
+      <div class="phase">
+        <div class="phase-left">
+          <div class="phase-num">01</div>
+          <div class="phase-time">0–30 días</div>
+        </div>
+        <div class="phase-right">
+          <span class="phase-tag urgent">Urgente — Inmediato</span>
+          <h3>Estabilización y Diagnóstico Base</h3>
+          <ul class="action-list">
+            <li>Inventario completo de hardware, software, licencias y contraseñas en un documento centralizado.</li>
+            <li>Verificar que los servidores de las 4 sucursales tengan backups recientes y funcionales — probar recuperación.</li>
+            <li>Activar actualizaciones automáticas de seguridad en todos los servidores WS2019.</li>
+            <li>Auditoría de usuarios y accesos: eliminar cuentas inactivas, revisar permisos excesivos.</li>
+            <li>Definir quién será el responsable interno de TI (aunque sea provisional) o contratar una firma de soporte gestionado (MSP).</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-left">
+          <div class="phase-num">02</div>
+          <div class="phase-time">1–3 meses</div>
+        </div>
+        <div class="phase-right">
+          <span class="phase-tag urgent">Prioritario</span>
+          <h3>Seguridad, Backups y Política de TI</h3>
+          <ul class="action-list">
+            <li>Implementar solución de backup automatizado y probado con retención en la nube (Veeam, Acronis, Azure Backup).</li>
+            <li>Desplegar EDR/antivirus gestionado en todos los equipos de las 4 sucursales.</li>
+            <li>Configurar firewall perimetral adecuado por sucursal y VPN para comunicaciones entre ellas.</li>
+            <li>Crear política básica de contraseñas, bloqueo de sesión y gestión de accesos.</li>
+            <li>Documentar procesos críticos de TI (qué hacer si cae el servidor, cómo hacer respaldo manual, escalación).</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-left">
+          <div class="phase-num">03</div>
+          <div class="phase-time">3–6 meses</div>
+        </div>
+        <div class="phase-right">
+          <span class="phase-tag medium">Estratégico</span>
+          <h3>Centralización de Datos y Eliminación de Conciliación Manual</h3>
+          <ul class="action-list">
+            <li>Evaluar e implementar un ERP o sistema de gestión centralizado (por ejemplo: Aspel NOI/COI, SAP B1, Odoo, Bind ERP) adaptado al giro del negocio.</li>
+            <li>Migrar las 4 bases de datos hacia una instancia centralizada con acceso multi-sucursal en tiempo real.</li>
+            <li>Configurar reportería automática diaria/semanal que elimine la conciliación manual.</li>
+            <li>Establecer esquema de sincronización segura entre sucursales con tolerancia a desconexiones momentáneas.</li>
+            <li>Capacitar al equipo administrativo y de ventas en el nuevo sistema centralizado.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-left">
+          <div class="phase-num">04</div>
+          <div class="phase-time">6–9 meses</div>
+        </div>
+        <div class="phase-right">
+          <span class="phase-tag medium">Infraestructura</span>
+          <h3>Migración a Windows Server 2025</h3>
+          <ul class="action-list">
+            <li>Evaluar si migrar in-place o realizar una migración limpia (recomendado para aprovechar la reorganización de la infraestructura).</li>
+            <li>Planear la migración comenzando por el servidor menos crítico de operaciones como entorno piloto.</li>
+            <li>Aprovechar WS2025 para consolidar roles de servidor y reducir el número de máquinas físicas necesarias.</li>
+            <li>Configurar Azure Arc para visibilidad centralizada y gestión híbrida desde una sola consola.</li>
+            <li>Documentar arquitectura final: topología de red, roles de servidores, usuarios, políticas.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-left">
+          <div class="phase-num">05</div>
+          <div class="phase-time">9–18 meses</div>
+        </div>
+        <div class="phase-right">
+          <span class="phase-tag long">Largo Plazo — Crecimiento</span>
+          <h3>Madurez Tecnológica y Habilitación de Escala</h3>
+          <ul class="action-list">
+            <li>Formalizar el Departamento de TI: contratar al menos un administrador de sistemas o IT Manager de tiempo completo.</li>
+            <li>Implementar mesa de ayuda interna (helpdesk) con ticketing (Freshdesk, Zoho Desk, GLPI) para visibilidad de incidentes.</li>
+            <li>Migración progresiva de servicios a la nube (correo, almacenamiento, backups) para reducir dependencia de hardware físico.</li>
+            <li>Definir un plan de continuidad del negocio (BCP) con tiempos objetivo de recuperación formalizados.</li>
+            <li>Evaluar expansión: la infraestructura ya estará preparada para agregar sucursales sin fricción técnica.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Diagnóstico elaborado como análisis de consultoría de TI · Documento de referencia estratégica
+</footer>
+
+</body>
+</html>
